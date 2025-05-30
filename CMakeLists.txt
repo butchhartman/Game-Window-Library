@@ -4,6 +4,8 @@ project(GWL
         DESCRIPTION "A windowing library"
         LANGUAGES C)
 
+add_compile_definitions(GWL_VERSION="${PROJECT_VERSION}")
+
 add_library(${PROJECT_NAME} STATIC)
 
 set_target_properties(${PROJECT_NAME} 
@@ -16,3 +18,6 @@ set_target_properties(${PROJECT_NAME}
 target_sources(${PROJECT_NAME} PUBLIC FILE_SET HEADERS BASE_DIRS include)
 
 add_subdirectory(src) 
+
+enable_testing()
+add_subdirectory(tests)

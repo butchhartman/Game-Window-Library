@@ -8,7 +8,7 @@ typedef struct GameWindow {
     float b;
 } GameWindow;
 
-void printSomething() {
-    printf("Something!\n");
+void printVersion() {
+    printf("Running GWL version %s", GWL_VERSION);
 }
 #endif // _WIN32
