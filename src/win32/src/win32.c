@@ -9,6 +9,10 @@
 #include <assert.h>
 #include "GameWindowPrototypes.h"
 #include <Windows.h>
+// make this only defined if debug is defined?
+#define GWL_LOG(message) { \
+   printf("(%s - Line %d): %s\n", __FILE__, __LINE__, message);\
+} \
 
 static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -16,9 +20,9 @@ static DWORD WINAPI initializeHwnd(GameWindow* window);
 
 typedef struct GameWindow {
     HWND handle;
-    const char* windowTitle;
-    uint8_t isActive;
     HANDLE windowMainThread;
+    wchar_t* windowTitle;
+    uint64_t isActive;
 } GameWindow;
 
 void printVersion(void) {
@@ -27,8 +31,21 @@ void printVersion(void) {
 
 GameWindow* gwlCreateWindow(const char* windowTitle) {
     GameWindow* newWindow = malloc(sizeof(GameWindow));
+
+    // Convert from char string to wide char string (unicode)
+    size_t titleLength = strlen(windowTitle) + 1;
+    newWindow->windowTitle = malloc(titleLength * sizeof(wchar_t));
+    assert(newWindow->windowTitle != NULL); // Ensure malloc was successful
+    size_t convertedChars = 0;
+    errno_t conversionResult = 
+        mbstowcs_s(&convertedChars,
+                newWindow->windowTitle, 
+                titleLength,windowTitle, 
+                _TRUNCATE
+        );
+    assert(conversionResult == 0); // ensure conversion success
+
     newWindow->handle = NULL;
-    newWindow->windowTitle = windowTitle;
     newWindow->isActive = FALSE;
     newWindow->windowMainThread = 
         CreateThread(
@@ -38,9 +55,10 @@ GameWindow* gwlCreateWindow(const char* windowTitle) {
             newWindow,
             0,
             NULL);
+    assert(newWindow->windowMainThread != NULL); // ensure thread creation succeeds
 
     while (!newWindow->handle) {
-        printf("Handle not yet created\n");
+        GWL_LOG("Handle not yet created");
     }
 
     SuspendThread(newWindow->windowMainThread);
@@ -61,8 +79,14 @@ void gwlHideWindow(GameWindow* window) {
 }
 
 void gwlCleanupWindow(GameWindow* window) {
-    window->isActive = FALSE;
+    // Hide window from user
     ShowWindow(window->handle, SW_HIDE);
+
+    // Clean up resources / states
+    window->isActive = FALSE;
+    free(window->windowTitle);
+
+    // Destroy the window and free its remaining resources
     DestroyWindow(window->handle);
     free(window);
 }
@@ -87,7 +111,8 @@ static DWORD WINAPI initializeHwnd(GameWindow* window) {
     gameWindowClass.hInstance = GetModuleHandle(NULL);
     gameWindowClass.lpszClassName = gameWindowClassName;
 
-    assert(RegisterClass(&gameWindowClass) != 0); // ensure class successfully registers
+    ATOM classIdentifier = RegisterClass(&gameWindowClass); 
+    assert(classIdentifier != 0); // ensure class successfully registers
 
     HWND hwnd = CreateWindowEx(
         0,
