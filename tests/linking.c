@@ -1,6 +1,6 @@
-#include <GameWindowPrototypes.h>
+#include <GameWindow.h>
 
 int main(){
-    printVersion();
+    gwlPrintVersion();
     return 0;
 }

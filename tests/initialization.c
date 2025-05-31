@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <GameWindow.h>
 int main() {
-    printVersion();
+    gwlPrintVersion();
     printf("ASDADSASD");
     GameWindow* myWindow = gwlCreateWindow("My window!");
     gwlShowWindow(myWindow);

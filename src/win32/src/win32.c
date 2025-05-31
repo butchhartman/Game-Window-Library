@@ -1,3 +1,5 @@
+typedef int make_iso_compilers_happy;
+
 #ifdef _WIN32
 
 #ifndef UNICODE
@@ -7,8 +9,8 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <assert.h>
-#include "GameWindowPrototypes.h"
 #include <Windows.h>
+#include <GameWindowCore.h>
 // make this only defined if debug is defined?
 #define GWL_LOG(message) { \
    printf("(%s - Line %d): %s\n", __FILE__, __LINE__, message);\
@@ -23,15 +25,16 @@ typedef struct GameWindow {
     HANDLE windowMainThread;
     wchar_t* windowTitle;
     uint64_t isActive;
+    PTRKEYBOARDINPUTCBFUNC keyboardInputCallback;
+    PTRMOUSEINPUTCBFUNC mouseInputCallback;
 } GameWindow;
 
-void printVersion(void) {
+void gwlPrintVersion(void) {
     printf("Running GWL version %s", GWL_VERSION);
 }
 
 GameWindow* gwlCreateWindow(const char* windowTitle) {
     GameWindow* newWindow = malloc(sizeof(GameWindow));
-
     // Convert from char string to wide char string (unicode)
     size_t titleLength = strlen(windowTitle) + 1;
     newWindow->windowTitle = malloc(titleLength * sizeof(wchar_t));
@@ -47,6 +50,8 @@ GameWindow* gwlCreateWindow(const char* windowTitle) {
 
     newWindow->handle = NULL;
     newWindow->isActive = FALSE;
+    newWindow->keyboardInputCallback = NULL;
+    newWindow->mouseInputCallback = NULL;
     newWindow->windowMainThread = 
         CreateThread(
             NULL,
@@ -91,14 +96,39 @@ void gwlCleanupWindow(GameWindow* window) {
     free(window);
 }
 
+uint64_t gwlGetWindowStatus(GameWindow* window) {
+    return window->isActive;
+}
+
+void gwlSetKeyboardInputCallback(GameWindow* window, PTRKEYBOARDINPUTCBFUNC callback) {
+    window->keyboardInputCallback = callback;
+}
+
+void gwlSetMouseInputCallback(GameWindow* window, PTRMOUSEINPUTCBFUNC callback) {
+    window->mouseInputCallback = callback;
+}
+
 static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    GameWindow* window = GetProp(hwnd, L"WINDOW_STRUCT_DATA");
     switch(uMsg) {
         case WM_DESTROY:
             PostQuitMessage(0);
             break;
+        case WM_KEYDOWN:
+            if (window->keyboardInputCallback != NULL) {
+                window->keyboardInputCallback(window, uMsg); // message translation stuff later
+            }
+            break;
+        case WM_MOUSEMOVE:
+            if (window->mouseInputCallback != NULL) {
+                window->mouseInputCallback(window, uMsg);
+            }
+            break;
         default:
             break;
     }
+
+
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 
 }
@@ -130,6 +160,7 @@ static DWORD WINAPI initializeHwnd(GameWindow* window) {
 
     assert(hwnd != NULL); // Ensure hwnd successfully initializes
 
+    SetProp(hwnd, L"WINDOW_STRUCT_DATA", window);
     window->handle = hwnd;
 
     MSG msg = {0};
