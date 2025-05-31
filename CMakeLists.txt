@@ -8,6 +8,10 @@ add_compile_definitions(GWL_VERSION="${PROJECT_VERSION}")
 
 add_library(${PROJECT_NAME} STATIC)
 
+if (MSVC)
+target_compile_options(${PROJECT_NAME} PRIVATE /W4 /Wall)
+endif()
+
 set_target_properties(${PROJECT_NAME} 
                         PROPERTIES
                         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}/lib"

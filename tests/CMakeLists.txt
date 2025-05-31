@@ -1,4 +1,8 @@
-add_executable(GameWindowDriver main.c)
-target_link_libraries(GameWindowDriver ${PROJECT_NAME})
+add_executable(linkingTestDriver linking.c)
+target_link_libraries(linkingTestDriver ${PROJECT_NAME})
 
-add_test(GameWindowLinkTest GameWindowDriver)
+add_executable(windowInitializationTestDriver initialization.c)
+target_link_libraries(windowInitializationTestDriver ${PROJECT_NAME})
+
+add_test(linkingTest linkingTestDriver)
+add_test(windowInitializationTest windowInitializationTestDriver)

@@ -1,8 +1,31 @@
 #ifndef _GAMEWINDOW_PROTOTPYES_H_
 #define _GAMEWINDOW_PROTOTYPES_H_
 
+// Things I'll need
+// Struct to store window state and info [X]
+// Function to create a window [X]
+// A way to run the window's message loop without halting the main thread [X]
+// A way to queue messages so their callback functions can be called on the main thread
+// Function to show a window [X]
+// Function to hide a window [X]
+// Callback function for keyboard input processing (separate header?)
+// Function to lock mouse to window
+// Callback function for mouse input processing (separate header?)
+// Function to create an opengl context on a window (separate header?)
+// Function to make a window's opengl context current (separate header?)
+// Function to swap buffers
+// Function to clean up & destroy a window [X]
+
 typedef struct GameWindow GameWindow;
  
-extern void printSomething();
+extern void printVersion(void);
+
+extern GameWindow* gwlCreateWindow(const char* windowTitle);
+
+extern void gwlShowWindow(GameWindow* window);
+
+extern void gwlHideWindow(GameWindow* window);
+
+extern void gwlCleanupWindow(GameWindow* window);
 
 #endif // _GAMEWINDOW_PROTOTYPES_H
