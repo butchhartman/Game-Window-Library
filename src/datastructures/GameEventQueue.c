@@ -4,55 +4,67 @@
 #include <datastructures/GameEventQueue.h>
 
 
-typedef struct geQueue {
-    char* queueArray; // A char is one byte, so I can just specify amount of bytes needed
-    int64_t maxElements;
-    size_t elementSize;
-    size_t numArrayMembers;
-    int64_t front;
-    int64_t back;
-} geQueue;
+int geQueueCreate(geQueue* dest) {
+    // geQueue* newQueue = malloc(sizeof(geQueue));
+    // if (newQueue == NULL) {
+    //     // do something error-handly here?
+    //     return 1;
+    // }
+    dest->head = NULL;
+    dest->tail = NULL;
 
-geQueue* geQueueCreate(size_t datatypeSizeBytes) {
-    geQueue* queue = malloc(sizeof(geQueue));
-    queue->queueArray = malloc(datatypeSizeBytes * GEQUEUE_INITIAL_SIZE);
-    queue->maxElements = GEQUEUE_INITIAL_SIZE;
-    queue->elementSize = datatypeSizeBytes;
-    queue->front = -1;
-    queue->back = 0;
-    return queue;
+    // dest = newQueue;
+    return 0;
 }
 
-uint8_t geQueueIsFull(geQueue* queue) {
-    return (queue->back >= queue->maxElements);
-}
+int geQueueEnqueue(geQueue* queue, void* data, size_t size) {
+    geqNode* newNode = malloc(sizeof(geqNode));
 
-uint8_t geQueueIsEmpty(geQueue* queue) {
-    return (queue->front == queue->back - 1);
-}
-
-void geQueueEnqueue(geQueue* queue, void* data) {
-    // Don't add the data if the queue is full (TODO: Convert to realloc)
-    if (geQueueIsFull(queue)) {
-        printf("WARNING: Queue overflow\n");
-        return;
+    if (newNode == NULL) {
+        return 1;
     }
 
+    newNode->data = malloc(size);
 
-    memcpy( queue->queueArray + queue->back * queue->elementSize, data, queue->elementSize);
-    queue->back++;
-}
-
-void geQueueDequeue(geQueue* queue, void* dest) {
-    if (geQueueIsEmpty(queue)) {
-        printf("WARNING: Queue underflow\n");
-        return;
+    if (newNode->data == NULL) {
+        return 1;
     }
 
+    newNode->size = size;
+    memcpy(newNode->data, data, size); 
 
-    queue->front++;
-    memcpy(dest, queue->queueArray + queue->front * queue->elementSize, queue->elementSize);
-    memset(queue->queueArray + queue->front * queue->elementSize, 0, queue->elementSize);
-    // void* data = (void*)(queue->queueArray)[queue->front];
-    // (queue->queueArray)[queue->front] = NULL;
+    if (queue->tail != NULL) {
+        queue->tail->next = newNode;
+    }
+    newNode->next = NULL; 
+    queue->tail = newNode;
+
+    if (queue->head == NULL) {
+        queue->head = newNode;
+    }
+    return 0;
+}
+
+int geQueueDequeue(geQueue* queue, void* dest) {
+    if (queue->head == NULL) {
+        return 1;
+    }
+
+    geqNode* deQueuedNode = queue->head;
+    memcpy(dest, deQueuedNode->data, deQueuedNode->size);
+
+    if (deQueuedNode->next == NULL) {
+        queue->head = NULL;
+        queue->tail = NULL;
+    } else {
+        queue->head = deQueuedNode->next;
+    }
+
+    free(deQueuedNode->data);
+    free(deQueuedNode);
+    return 0;
+}
+
+int geQueueIsEmpty(geQueue* queue) {
+    return (queue->head == NULL);
 }

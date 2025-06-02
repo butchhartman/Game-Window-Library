@@ -2,47 +2,41 @@
 #include <assert.h>
 #include <datastructures/GameEventQueue.h>
 
-// Once size amount of objects are sent into the queue, it beocomes unusable. I need a way to have the queue be reusable. (Have the back pointer wrap around if there is less than 50 in the queue) 
+void queueue(geQueue* queue) {
+    int qVal = 3456543;
+    geQueueEnqueue(queue, &qVal, sizeof(int));
+}
 
 int main() {
-    geQueue* myQueue = geQueueCreate(sizeof(int));
+    // Test queueing into an empty queue and dequeueing the last item in a queue
+    int testEnqueueVal = 69420;
+    int testDequeueVal = -12345;
+    geQueue myQ;
+    geQueueCreate(&myQ);
 
-    int testVal = -12345;
+    geQueueEnqueue(&myQ, &testEnqueueVal, sizeof(int));
+    geQueueDequeue(&myQ, &testDequeueVal);
 
-    // Test queue empty
-    assert(geQueueIsEmpty(myQueue) == 1);
+    assert(testDequeueVal == testEnqueueVal);
+    assert(geQueueIsEmpty(&myQ));
 
-    // Test underflow checking
-    geQueueDequeue(myQueue, &testVal);
-    assert(testVal == -12345);
-
-    // test overflow checking
-    // should be 5 reports of overflow
-    for (int i = 0; i < 55; i++) {
-        geQueueEnqueue(myQueue, &i);
+    // Test queueing and dequeueing correctness after an arbitrary amount (and on an already used queue) (Also testing if the data in the queue is actually persistant)
+    for (int i = 0; i < 250; i++) {
+        geQueueEnqueue(&myQ, &i, sizeof(int));
     }
 
-    // test queue full
-    assert(geQueueIsFull(myQueue) == 1);
-    assert(geQueueIsEmpty(myQueue) == 0);
+    assert(!geQueueIsEmpty(&myQ));
 
-    // Test that all values can be accesssed
-    for (int i = 0; i < 50; i++) {
-        geQueueDequeue(myQueue, &testVal);
-        assert(testVal == i);
-    } 
-    
-    testVal = 0;
-
-    // test that values can be added after a full queue enqueue and dequeue
-    for (int i = 0; i < 50; i++) {
-        geQueueEnqueue(myQueue, &i);
-    }
-    // test that all values can be accessed after a full queue enqueue and dequeue
-    for (int i = 0; i < 50; i++) {
-        geQueueDequeue(myQueue, &testVal);
-        assert(testVal == i);
+    for (int i = 0; i < 250; i++) {
+        geQueueDequeue(&myQ, &testDequeueVal);
+        assert(testDequeueVal == i);
     }
 
+    assert(geQueueIsEmpty(&myQ));
+
+    // test queueing from a different function
+    queueue(&myQ);
+    geQueueDequeue(&myQ, &testDequeueVal);
+    assert(testDequeueVal == 3456543);
     return 0;
 }

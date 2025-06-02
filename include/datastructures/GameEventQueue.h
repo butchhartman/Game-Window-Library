@@ -2,18 +2,24 @@
 #define _GAMEQUEUE_H_
 #include <stdint.h>
 // How many elements of the specified type the queue will hold at once
-#define GEQUEUE_INITIAL_SIZE 50
 
-typedef struct geQueue geQueue;
+typedef struct geqNode {
+    void* data;
+    size_t size;
+    struct geqNode* next;
+} geqNode;
 
-geQueue* geQueueCreate(size_t datatypeSizeBytes);
+typedef struct geQueue {
+    geqNode* head;
+    geqNode* tail;
+} geQueue;
 
-uint8_t geQueueIsFull(geQueue* queue);
+int geQueueCreate(geQueue* dest);
 
-uint8_t geQueueIsEmpty(geQueue* queue);
+int geQueueEnqueue(geQueue* queue, void* data, size_t size);
 
-void geQueueEnqueue(geQueue* queue, void* data);
+int geQueueDequeue(geQueue* queue, void* dest);
 
-void geQueueDequeue(geQueue* queue, void* dest);
+int geQueueIsEmpty(geQueue* queue);
 
 #endif // _GAMEQUEUE_H_
