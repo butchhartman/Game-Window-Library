@@ -8,9 +8,9 @@
 // A way to queue messages so their callback functions can be called on the main thread (poll events)
 // Function to show a window [X]
 // Function to hide a window [X]
-// Callback function for keyboard input processing (separate header?)
+// Callback function for keyboard input processing [X](separate header?)
 // Function to lock mouse to window
-// Callback function for mouse input processing (separate header?)
+// Callback function for mouse input processing [X] (separate header?)
 // Function to create an opengl context on a window (separate header?)
 // Function to make a window's opengl context current (separate header?)
 // Function to swap buffers
