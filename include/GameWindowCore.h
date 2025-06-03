@@ -1,6 +1,7 @@
 #ifndef _GAMEWINDOW_CORE_H_
 #define _GAMEWINDOW_CORE_H_
 #include <stdint.h>
+#include <stdalign.h>
 // Things I'll need
 // Struct to store window state and info [X]
 // Function to create a window [X]
@@ -16,7 +17,7 @@
 // Function to swap buffers
 // Function to clean up & destroy a window [X]
 
-typedef enum gwEventType {gw_keyboardEvent, gw_mouseEvent} gwEventType;
+typedef enum gwEventType {gw_windowReizeEvent, gw_keyboardEvent, gw_mouseEvent} gwEventType;
 typedef enum gwEventKeycode  {gw_W, gw_A, gw_S, gw_D, gw_KEYUNSUPPORED} gwEventKeycode;
 typedef enum gwMouseEventInputCode {gw_NONE, gw_LMB, gw_RMB} gwMouseEventInputCode;
 
@@ -38,6 +39,10 @@ typedef enum mouseInputStateFlagBits {
 typedef struct gwInputEvent {
     gwEventType eventType;
 
+    // window resize
+    uint32_t windowWidth;
+    uint32_t windowHeight;
+
     // keyboard
     gwEventKeycode key;
     keyStateFlags keyStateFlags;
@@ -46,14 +51,13 @@ typedef struct gwInputEvent {
     // lmb/rmb, up/down,
     gwMouseEventInputCode mouseInputCode;
     mouseInputStateFlags mouseInputStateFlags;
-    uint64_t xPos;
-    uint64_t yPos;
+    int64_t xPos;
+    int64_t yPos;
 } gwInputEvent;
 
 typedef struct GameWindow GameWindow;
 
-typedef void (*PTRKEYBOARDINPUTCBFUNC)(GameWindow* window, gwInputEvent inputEvent);
-typedef void (*PTRMOUSEINPUTCBFUNC)(GameWindow* window, gwInputEvent inputEvent);
+typedef void (*PTRINPUTCBFUNC)(GameWindow* window, gwInputEvent inputEvent);
 
 extern void gwlPrintVersion(void);
 
@@ -69,8 +73,7 @@ extern uint64_t gwlGetWindowStatus(GameWindow* window);
 
 extern void gwlPollEvents(GameWindow* window);
 
-extern void gwlSetKeyboardInputCallback(GameWindow* window, PTRKEYBOARDINPUTCBFUNC callback);
+extern void gwlSetInputCallback(GameWindow* window, PTRINPUTCBFUNC callback);
 
-extern void gwlSetMouseInputCallback(GameWindow* window, PTRMOUSEINPUTCBFUNC callback);
 
 #endif // _GAMEWINDOW_PROTOTYPES_H

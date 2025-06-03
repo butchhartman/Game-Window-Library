@@ -3,25 +3,29 @@
 #include <GameWindow.h>
 
 int hitKey = 0;
+int moust = 0;
 
-void keyboardCallback(GameWindow* window, gwInputEvent msg) {
-    printf("Keyboard callback\n");
+void inputCallback(GameWindow* window, gwInputEvent msg) {
+    printf("callbackproc\n");
     printf("%d\n", msg.eventType);
-    hitKey = 1;
+    if (msg.eventType == gw_keyboardEvent && msg.keyStateFlags | KEY_DOWN_BIT) {
+        printf("PRESSED KEY: %d\n", msg.key);
+        hitKey = 1;
+    } else if (hitKey == 1 && msg.eventType == gw_mouseEvent) {
+        printf("MOUSE X POS: %d, MOUSE Y POS: %d\n", msg.xPos, msg.yPos);
+        moust = 1;
+    } else if (hitKey == 0 && moust == 0 && msg.eventType == gw_windowReizeEvent) {
+        printf("WINDOW WIDTH: %d, WINDOW HEIGHT: %d\n", msg.windowWidth, msg.windowHeight);
+    }
 }
 
-void mouseCallback(GameWindow* window, gwInputEvent msg) {
-    printf("Mouse callback\n");
-    printf("MOUSE X: %d, MOUSE Y: %d\n", msg.xPos, msg.yPos);
-    hitKey = 1;
-}
 // It is not tested whether or not the callbacks are actually run in the main thread, but they should be.
 // Currently, this only tests for whether or not the callback functions will actually be called. It does not test if the passed conditions are correct or if the callback is called in the main thread (intended behavior) yet.
 // To make this test pass, the tester must first select the window and press a key, then hover their mouse over the window
 int main() {
 
     GameWindow* myWindow = gwlCreateWindow("Event queue and callback testing!!!");
-    gwlSetKeyboardInputCallback(myWindow, keyboardCallback);
+    gwlSetInputCallback(myWindow, inputCallback);
 
     gwlShowWindow(myWindow);
 
@@ -32,14 +36,11 @@ int main() {
         }
         gwlPollEvents(myWindow);
     }
-    hitKey = 0;
-    gwlSetMouseInputCallback(myWindow, mouseCallback);
-    gwlSetKeyboardInputCallback(myWindow, NULL);
 
     gwlShowWindow(myWindow);
     while (gwlGetWindowStatus(myWindow) == 1) {
         /* code */
-        if (hitKey == 1) {
+        if (moust == 1) {
             gwlHideWindow(myWindow);
         }
         gwlPollEvents(myWindow);

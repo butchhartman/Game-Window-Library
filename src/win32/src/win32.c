@@ -10,6 +10,7 @@ typedef int make_iso_compilers_happy;
 #include <stdint.h>
 #include <assert.h>
 #include <Windows.h>
+#include <windowsx.h>
 #include <GameWindowCore.h>
 #include <datastructures/GameEventQueue.h>
 // make this only defined if debug is defined?
@@ -17,18 +18,20 @@ typedef int make_iso_compilers_happy;
    printf("(%s - Line %d): %s\n", __FILE__, __LINE__, message);\
 } \
 
+static gwEventKeycode translateWparamToKeycode(WPARAM wParam);
+
 static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 static DWORD WINAPI initializeHwnd(GameWindow* window);
+
 
 typedef struct GameWindow {
     HWND handle;
     HANDLE windowMainThread;
     wchar_t* windowTitle;
-    uint64_t isActive;
-    PTRKEYBOARDINPUTCBFUNC keyboardInputCallback;
-    PTRMOUSEINPUTCBFUNC mouseInputCallback;
+    PTRINPUTCBFUNC inputCallback;
     geQueue eventQueue;
+    uint64_t isActive;
 } GameWindow;
 
 void gwlPrintVersion(void) {
@@ -52,9 +55,9 @@ GameWindow* gwlCreateWindow(const char* windowTitle) {
 
     newWindow->handle = NULL;
     newWindow->isActive = FALSE;
-    newWindow->keyboardInputCallback = NULL;
-    newWindow->mouseInputCallback = NULL;
+    newWindow->inputCallback = NULL;
     geQueueCreate(&newWindow->eventQueue);
+
     newWindow->windowMainThread = 
         CreateThread(
             NULL,
@@ -107,73 +110,85 @@ void gwlPollEvents(GameWindow* window) {
     while (!geQueueIsEmpty(&window->eventQueue)) {
         gwInputEvent event;
         geQueueDequeue(&window->eventQueue, &event);
-
-        if (event.eventType == gw_keyboardEvent) {
-            // keyboard callback
-            window->keyboardInputCallback(window, event);
-        } else if (event.eventType == gw_mouseEvent) {
-            // mouse callback
-            window->mouseInputCallback(window, event);
-        }
+        window->inputCallback(window, event);
     }
 }
 
-void gwlSetKeyboardInputCallback(GameWindow* window, PTRKEYBOARDINPUTCBFUNC callback) {
-    window->keyboardInputCallback = callback;
+void gwlSetInputCallback(GameWindow* window, PTRINPUTCBFUNC callback) {
+    window->inputCallback = callback;
 }
 
-void gwlSetMouseInputCallback(GameWindow* window, PTRMOUSEINPUTCBFUNC callback) {
-    window->mouseInputCallback = callback;
+static gwEventKeycode translateWparamToKeycode(WPARAM wParam) {
+    switch (wParam) {
+    case 'W':
+        return gw_W;
+        break;
+    case 'A':
+        return gw_A;
+        break;
+    case 'S':
+        return gw_S;
+        break;
+    case 'D':
+        return gw_D;
+        break;
+    default:
+        return gw_KEYUNSUPPORED;
+        break;
+    }
 }
 
 // TODO : Add support for WASD, LMB and RMB clicks, and window resizing
 static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     GameWindow* window = GetProp(hwnd, L"WINDOW_STRUCT_DATA");
+    // If there's no reason to add something to the queue, dont
+    if (window == NULL || (window->inputCallback == NULL && uMsg != WM_DESTROY) ) {
+        return DefWindowProc(hwnd, uMsg, wParam, lParam); 
+    }
+
     gwInputEvent thisEvent;
+    memset(&thisEvent, 0, sizeof(gwInputEvent));            
+    thisEvent.eventType = -1;
+
     switch(uMsg) {
         case WM_DESTROY:
             PostQuitMessage(0);
+            window->isActive = 0;
             break;
-        case WM_KEYDOWN:
-            // Ensure there is a callback to actually read from the queue
-            if (window->keyboardInputCallback == NULL) { 
-                break;
-            }
 
-            memset(&thisEvent, 0, sizeof(gwInputEvent));            
+        case WM_KEYDOWN:
+
             thisEvent.eventType = gw_keyboardEvent;
             thisEvent.keyStateFlags |= KEY_DOWN_BIT;
+            thisEvent.key = translateWparamToKeycode(wParam);
 
-            if (wParam == 'W') {
-                thisEvent.key = gw_W;
-            } else {
-                thisEvent.key = gw_KEYUNSUPPORED;
-            }
-
-            geQueueEnqueue(&window->eventQueue, &thisEvent, sizeof(gwInputEvent));
             break;
-        case WM_MOUSEMOVE:
-            // Ensure there is a callback to actually read from the queue
-            if (window->mouseInputCallback == NULL) {
-                break;
-            }
-            POINT cursorPos;
-            GetCursorPos(&cursorPos);
 
-            memset(&thisEvent, 0, sizeof(gwInputEvent));            
+        case WM_MOUSEMOVE:
+
             thisEvent.eventType = gw_mouseEvent;
             thisEvent.mouseInputCode = gw_NONE;
-            thisEvent.xPos = cursorPos.x;
-            thisEvent.yPos = cursorPos.y;
-            geQueueEnqueue(&window->eventQueue, &thisEvent, sizeof(gwInputEvent));
+            thisEvent.xPos = GET_X_LPARAM(lParam);
+            thisEvent.yPos = GET_Y_LPARAM(lParam);
             break;
+
+        case WM_SIZE:
+
+           thisEvent.eventType = gw_windowReizeEvent;
+           thisEvent.windowHeight = HIWORD(lParam);
+           thisEvent.windowWidth = LOWORD(lParam);
+           break;
+
         default:
             break;
     }
 
+    // only queue when the event type is valid 
+    if (thisEvent.eventType != -1) {
+        geQueueEnqueue(&window->eventQueue, &thisEvent, sizeof(gwInputEvent));
+    }
 
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
-
 }
 
 static DWORD WINAPI initializeHwnd(GameWindow* window) {
