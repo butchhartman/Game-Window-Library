@@ -10,7 +10,7 @@
 // Function to show a window [X]
 // Function to hide a window [X]
 // Callback function for keyboard input processing [X](separate header?)
-// Function to lock mouse to window
+// Function to lock mouse to window [X]
 // Callback function for mouse input processing [X] (separate header?)
 // Function to create an opengl context on a window (separate header?)
 // Function to make a window's opengl context current (separate header?)
@@ -24,6 +24,10 @@ typedef enum gwMouseEventInputCode {gw_NONE, gw_LMB, gw_RMB} gwMouseEventInputCo
 // bit 1 is up/down
 typedef uint64_t keyStateFlags;
 typedef uint64_t mouseInputStateFlags;
+
+typedef enum inputFlagBits {
+    CAPTURE_MOUSE_BIT = 0x0000000000000001, // bit 1
+} inputFlagBits;
 
 typedef enum KeyStateFlagBits{
     KEY_UP_BIT = 0x0000000000000000, // bit 1
@@ -75,5 +79,6 @@ extern void gwlPollEvents(GameWindow* window);
 
 extern void gwlSetInputCallback(GameWindow* window, PTRINPUTCBFUNC callback);
 
+extern void gwlSetInputFlags(GameWindow* window, inputFlagBits flags, int8_t state);
 
 #endif // _GAMEWINDOW_PROTOTYPES_H

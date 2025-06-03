@@ -32,6 +32,9 @@ typedef struct GameWindow {
     PTRINPUTCBFUNC inputCallback;
     geQueue eventQueue;
     uint64_t isActive;
+    inputFlagBits inputFlags;
+    int64_t windowXPos;
+    int64_t windowYPos;
 } GameWindow;
 
 void gwlPrintVersion(void) {
@@ -56,6 +59,9 @@ GameWindow* gwlCreateWindow(const char* windowTitle) {
     newWindow->handle = NULL;
     newWindow->isActive = FALSE;
     newWindow->inputCallback = NULL;
+    newWindow->inputFlags = 0;
+    newWindow->windowXPos = 0;
+    newWindow->windowYPos = 0;
     geQueueCreate(&newWindow->eventQueue);
 
     newWindow->windowMainThread = 
@@ -118,6 +124,14 @@ void gwlSetInputCallback(GameWindow* window, PTRINPUTCBFUNC callback) {
     window->inputCallback = callback;
 }
 
+void gwlSetInputFlags(GameWindow* window, inputFlagBits flags, int8_t state) {
+    if (state == 1) {
+        window->inputFlags |= flags;
+    } else if (state == 0) {
+        window->inputFlags &= ~flags;
+    }
+}
+
 static gwEventKeycode translateWparamToKeycode(WPARAM wParam) {
     switch (wParam) {
     case 'W':
@@ -170,6 +184,14 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
             thisEvent.mouseInputCode = gw_NONE;
             thisEvent.xPos = GET_X_LPARAM(lParam);
             thisEvent.yPos = GET_Y_LPARAM(lParam);
+
+            if (window->inputFlags & CAPTURE_MOUSE_BIT) {
+                // kind of a dumb implementation, but it works and is probably fine for performance
+                RECT windowRect;
+                GetWindowRect(hwnd, &windowRect);
+                SetCursorPos(windowRect.right/2, windowRect.bottom/2);
+            }
+
             break;
 
         case WM_SIZE:
