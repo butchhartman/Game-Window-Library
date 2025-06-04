@@ -20,6 +20,8 @@ set_target_properties(${PROJECT_NAME}
                         )
 
 target_sources(${PROJECT_NAME} PUBLIC FILE_SET HEADERS BASE_DIRS include)
+target_include_directories(${PROJECT_NAME} PUBLIC include/glextensions)
+target_link_libraries(${PROJECT_NAME} PUBLIC opengl32.lib)
 
 add_subdirectory(src) 
 

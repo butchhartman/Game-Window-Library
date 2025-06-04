@@ -9,12 +9,12 @@
 // A way to queue messages so their callback functions can be called on the main thread (poll events) [X]
 // Function to show a window [X]
 // Function to hide a window [X]
-// Callback function for keyboard input processing [X](separate header?)
+// Callback function for keyboard input processing [X]
 // Function to lock mouse to window [X]
-// Callback function for mouse input processing [X] (separate header?)
-// Function to create an opengl context on a window (separate header?)
-// Function to make a window's opengl context current (separate header?)
-// Function to swap buffers
+// Callback function for mouse input processing [X] 
+// Function to create an opengl context on a window [X] 
+// Function to make a window's opengl context current  -- is done automatically, which means that having multiple windows with different contexts is unsupported
+// Function to swap buffers [X]
 // Function to clean up & destroy a window [X]
 
 typedef enum gwEventType {gw_windowReizeEvent, gw_keyboardEvent, gw_mouseEvent} gwEventType;
@@ -81,4 +81,7 @@ extern void gwlSetInputCallback(GameWindow* window, PTRINPUTCBFUNC callback);
 
 extern void gwlSetInputFlags(GameWindow* window, inputFlagBits flags, int8_t state);
 
+extern void gwlCreateOpenGLContext(GameWindow** window);
+
+extern void gwlSwapBuffers(GameWindow* window);
 #endif // _GAMEWINDOW_PROTOTYPES_H
