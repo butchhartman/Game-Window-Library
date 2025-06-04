@@ -19,11 +19,16 @@
 
 typedef enum gwEventType {gw_windowReizeEvent, gw_keyboardEvent, gw_mouseEvent} gwEventType;
 typedef enum gwEventKeycode  {gw_W, gw_A, gw_S, gw_D, gw_KEYUNSUPPORED} gwEventKeycode;
-typedef enum gwMouseEventInputCode {gw_NONE, gw_LMB, gw_RMB} gwMouseEventInputCode;
+typedef enum gwMouseEventInputCode {gw_NONE, gw_MOVE, gw_LMB, gw_RMB} gwMouseEventInputCode;
 
 // bit 1 is up/down
 typedef uint64_t keyStateFlags;
 typedef uint64_t mouseInputStateFlags;
+
+typedef enum gwWindowStatus {
+    GW_WINDOW_INACTIVE,
+    GW_WINDOW_ACTIVE
+} gwWindowStatus;
 
 typedef enum inputFlagBits {
     CAPTURE_MOUSE_BIT = 0x0000000000000001, // bit 1
@@ -35,8 +40,8 @@ typedef enum KeyStateFlagBits{
 } KeyStateFlagBits;
 
 typedef enum mouseInputStateFlagBits {
-    MOUSE_BUTTON_UP = 0x0000000000000000, // bit 1
-    MOUSE_BUTTON_DOWN = 0x0000000000000001, // bit 1
+    MOUSE_BUTTON_UP_BIT = 0x0000000000000000, // bit 1
+    MOUSE_BUTTON_DOWN_BIT = 0x0000000000000001, // bit 1
 } mouseInputStateFlagBits;
 
 // TODO: Consider shortening this struct by making all fields generic and their expected values dependant on the event type
@@ -63,6 +68,11 @@ typedef struct GameWindow GameWindow;
 
 typedef void (*PTRINPUTCBFUNC)(GameWindow* window, gwInputEvent inputEvent);
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 extern void gwlPrintVersion(void);
 
 extern GameWindow* gwlCreateWindow(const char* windowTitle);
@@ -84,4 +94,9 @@ extern void gwlSetInputFlags(GameWindow* window, inputFlagBits flags, int8_t sta
 extern void gwlCreateOpenGLContext(GameWindow** window);
 
 extern void gwlSwapBuffers(GameWindow* window);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif // _GAMEWINDOW_PROTOTYPES_H

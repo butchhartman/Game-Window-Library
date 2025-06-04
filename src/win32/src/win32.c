@@ -34,6 +34,7 @@ typedef struct GameWindow {
     HWND handle;
     HANDLE windowMainThread;
     DWORD windowMainThreadID;
+    uint32_t padding1;
     wchar_t* windowTitle;
     PTRINPUTCBFUNC inputCallback;
     geQueue eventQueue;
@@ -41,12 +42,13 @@ typedef struct GameWindow {
     HDC deviceContext;
     uint64_t isActive;
     inputFlagBits inputFlags;
+    uint32_t padding2;
     int64_t windowXPos;
     int64_t windowYPos;
 } GameWindow;
 
 void gwlPrintVersion(void) {
-    printf("Running GWL version %s", GWL_VERSION);
+    printf("Running GWL version %s\n", GWL_VERSION);
 }
 
 GameWindow* gwlCreateWindow(const char* windowTitle) {
@@ -267,7 +269,9 @@ static gwEventKeycode translateWparamToKeycode(WPARAM wParam) {
     }
 }
 
-// TODO : Add support for WASD, LMB and RMB clicks, and window resizing
+// SUPPORTED KEYS: W, A, S, D
+// SUPPORTED MOUSE INPUT: Movement, LMBDOWN, RMBDOWN
+// SUPPORTED ETC: Window resize
 static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     GameWindow* window = GetProp(hwnd, L"WINDOW_STRUCT_DATA");
     // If there's no reason to add something to the queue, dont
@@ -296,7 +300,8 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
         case WM_MOUSEMOVE:
 
             thisEvent.eventType = gw_mouseEvent;
-            thisEvent.mouseInputCode = gw_NONE;
+            thisEvent.mouseInputCode = gw_MOVE;
+            thisEvent.mouseInputStateFlags = 0;
             thisEvent.xPos = GET_X_LPARAM(lParam);
             thisEvent.yPos = GET_Y_LPARAM(lParam);
 
@@ -306,6 +311,24 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
                 GetWindowRect(hwnd, &windowRect);
                 SetCursorPos(windowRect.right/2, windowRect.bottom/2);
             }
+
+            break;
+
+        case WM_LBUTTONDOWN:
+                thisEvent.eventType = gw_mouseEvent;
+                thisEvent.mouseInputCode = gw_LMB;
+                thisEvent.mouseInputStateFlags |= MOUSE_BUTTON_DOWN_BIT;
+                thisEvent.xPos = GET_X_LPARAM(lParam);
+                thisEvent.yPos = GET_Y_LPARAM(lParam);
+
+            break;
+
+        case WM_RBUTTONDOWN:
+                thisEvent.eventType = gw_mouseEvent;
+                thisEvent.mouseInputCode = gw_RMB;
+                thisEvent.mouseInputStateFlags |= MOUSE_BUTTON_DOWN_BIT;
+                thisEvent.xPos = GET_X_LPARAM(lParam);
+                thisEvent.yPos = GET_Y_LPARAM(lParam);
 
             break;
 

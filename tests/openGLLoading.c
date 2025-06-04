@@ -13,7 +13,7 @@ int main() {
     gwlCreateOpenGLContext(&myWindow);
     gwlShowWindow(myWindow);
 
-    while (gwlGetWindowStatus(myWindow) == 1) {
+    while (gwlGetWindowStatus(myWindow) == GW_WINDOW_ACTIVE) {
 
         gwlPollEvents(myWindow);
         gwlSwapBuffers(myWindow);
