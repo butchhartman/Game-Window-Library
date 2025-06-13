@@ -330,11 +330,16 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 
             if (window->inputFlags & CAPTURE_MOUSE_BIT) {
                 // kind of a dumb implementation, but it works and is probably fine for performance
-                RECT windowRect;
-                GetWindowRect(hwnd, &windowRect);
+                RECT windowClientRect;
+                GetClientRect(hwnd, &windowClientRect);
+                POINT mousePos;
+                mousePos.x = windowClientRect.right/2;
+                mousePos.y = windowClientRect.bottom/2;
+                ClientToScreen(hwnd, &mousePos);
                 SetCursorPos(
-                    windowRect.left + (windowRect.right - windowRect.left) / 2, 
-                    windowRect.top + (windowRect.bottom - windowRect.top) / 2);
+                    mousePos.x,
+                    mousePos.y
+                );
             }
 
             break;
