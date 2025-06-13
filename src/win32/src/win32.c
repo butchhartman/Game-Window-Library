@@ -332,7 +332,9 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
                 // kind of a dumb implementation, but it works and is probably fine for performance
                 RECT windowRect;
                 GetWindowRect(hwnd, &windowRect);
-                SetCursorPos(windowRect.right/2, windowRect.bottom/2);
+                SetCursorPos(
+                    windowRect.left + (windowRect.right - windowRect.left) / 2, 
+                    windowRect.top + (windowRect.bottom - windowRect.top) / 2);
             }
 
             break;
