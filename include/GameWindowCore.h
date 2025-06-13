@@ -47,8 +47,8 @@ typedef enum inputFlagBits {
  * Flags which describe information about a key input
  */
 typedef enum KeyStateFlagBits{
-    KEY_UP_BIT = 0x0000000000000000, // bit 1
     KEY_DOWN_BIT = 0x0000000000000001, // bit 1
+    KEY_UP_BIT = 0x0000000000000002, // bit 2
 } KeyStateFlagBits;
 
 /**

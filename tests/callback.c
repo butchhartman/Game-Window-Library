@@ -9,8 +9,10 @@ int mouseclick = 0;
 void inputCallback(GameWindow* window, gwInputEvent msg) {
     printf("callbackproc\n");
     printf("%d\n", msg.eventType);
-    if (msg.eventType == gw_keyboardEvent && msg.keyStateFlags | KEY_DOWN_BIT) {
+    if (msg.eventType == gw_keyboardEvent && msg.keyStateFlags & KEY_DOWN_BIT) {
         printf("PRESSED KEY: %d\n", msg.key);
+    } else if (msg.eventType == gw_keyboardEvent && msg.keyStateFlags & KEY_UP_BIT ) { 
+        printf("RELEASED KEY %d\n", msg.key);
         hitKey = 1;
     } else if (hitKey == 1 && msg.eventType == gw_mouseEvent) {
         printf("MOUSE X POS: %d, MOUSE Y POS: %d\n", msg.xPos, msg.yPos);
