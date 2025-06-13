@@ -1,7 +1,3 @@
-typedef int make_iso_compilers_happy;
-
-#ifdef _WIN32
-
 #ifndef UNICODE
 #define UNICODE
 #endif // UNICODE
@@ -9,6 +5,7 @@ typedef int make_iso_compilers_happy;
 #include <stdio.h>
 #include <stdint.h>
 #include <assert.h>
+#include <time.h>
 #include <Windows.h>
 #include <windowsx.h>
 #include <GameWindowCore.h>
@@ -35,6 +32,7 @@ typedef struct GameWindow {
     HANDLE windowMainThread;
     DWORD windowMainThreadID;
     uint32_t padding1;
+    clock_t startTime;
     wchar_t* windowTitle;
     PTRINPUTCBFUNC inputCallback;
     geQueue eventQueue;
@@ -49,6 +47,22 @@ typedef struct GameWindow {
 
 void gwlPrintVersion(void) {
     printf("Running GWL version %s\n", GWL_VERSION);
+}
+
+double gwlGetTime(GameWindow* window) {
+    clock_t now = clock();
+    return (double)(now - window->startTime) / CLOCKS_PER_SEC;
+}
+
+void gwlPrintGLVersion(GameWindow* window) {
+    if (window->openGLContext == NULL) {
+        wprintf(L"Window '%ls' is not running OpenGL\n", window->windowTitle);
+    } else {
+        wprintf(L"Window '%ls' is running OpenGL version: %hs\n", // %hs means c string in wprintf
+            window->windowTitle, 
+            (char*)glGetString(GL_VERSION)
+        );
+    }
 }
 
 GameWindow* gwlCreateWindow(const char* windowTitle) {
@@ -68,6 +82,7 @@ GameWindow* gwlCreateWindow(const char* windowTitle) {
 
     newWindow->handle = NULL;
     newWindow->openGLContext = NULL;
+    newWindow->startTime = clock();
     newWindow->isActive = FALSE;
     newWindow->inputCallback = NULL;
     newWindow->inputFlags = 0;
@@ -240,9 +255,10 @@ void gwlCreateOpenGLContext(GameWindow** window) {
     (*window)->openGLContext = trueContext;
     wglMakeCurrent((*window)->deviceContext, (*window)->openGLContext);
     wglDeleteContext(falseContext);
-    #ifdef _DEBUG
-        MessageBoxA(0, (char*)glGetString(GL_VERSION), "OPENGL VERSION", 0);
-    #endif // _DEBUG
+
+    // #ifdef _DEBUG
+    //     MessageBoxA(0, (char*)glGetString(GL_VERSION), "OPENGL VERSION", 0);
+    // #endif // _DEBUG
 }
 
 void gwlSwapBuffers(GameWindow* window) {
@@ -293,6 +309,13 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 
             thisEvent.eventType = gw_keyboardEvent;
             thisEvent.keyStateFlags |= KEY_DOWN_BIT;
+            thisEvent.key = translateWparamToKeycode(wParam);
+
+            break;
+        
+        case WM_KEYUP:
+            thisEvent.eventType = gw_keyboardEvent;
+            thisEvent.keyStateFlags |= KEY_UP_BIT;
             thisEvent.key = translateWparamToKeycode(wParam);
 
             break;
@@ -390,6 +413,3 @@ static DWORD WINAPI initializeHwnd(GameWindow* window) {
 
     return 0;
 }
-
-
-#endif // _WIN32

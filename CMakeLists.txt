@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.21)
 project(GWL
         VERSION 0.0.1
         DESCRIPTION "A windowing library"
@@ -8,7 +8,7 @@ add_compile_definitions(GWL_VERSION="${PROJECT_VERSION}")
 
 add_library(${PROJECT_NAME} STATIC)
 
-if (MSVC)
+if (MSVC AND PROJECT_IS_TOP_LEVEL)
 target_compile_options(${PROJECT_NAME} PRIVATE /W4 /Wall)
 endif()
 

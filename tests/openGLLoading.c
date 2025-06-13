@@ -19,6 +19,8 @@ int main() {
         gwlSwapBuffers(myWindow);
     }
    
+    gwlPrintGLVersion(myWindow);
+
     gwlCleanupWindow(myWindow);
     return 0;
 }

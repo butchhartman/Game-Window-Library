@@ -1,6 +1,6 @@
-#ifndef _WIN32_IMPLEMENTATION_H_
-#define _WIN32_IMPLEMENTATION_H_
+#ifndef _LINUX_IMPLEMENTATION_H_
+#define _LINUX_IMPLEMENTATION_H_
 
 extern void fart();
 
-#endif // _WIN32_IMPLEMENTATION_H_
+#endif // _LINUX_IMPLEMENTATION_H_

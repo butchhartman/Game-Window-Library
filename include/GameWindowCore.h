@@ -103,6 +103,16 @@ extern "C" {
 extern void gwlPrintVersion(void);
 
 /**
+ * Returns the time in seconds since the passed window was created
+ */
+extern double gwlGetTime(GameWindow* window);
+
+/**
+ * Prints the version of the passed window's OpenGL context
+ */
+extern void gwlPrintGLVersion(GameWindow* window);
+
+/**
  * Creates and returns a pointer to a GameWindow object
  * \param windowTitle The title that will be displayed on the window frame
  */
