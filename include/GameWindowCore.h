@@ -3,6 +3,10 @@
 #include <stdint.h>
 #include <stdalign.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  *  Identifier for the type of event recieved by the input callback function
  */
@@ -93,9 +97,6 @@ typedef struct GameWindow GameWindow;
  */
 typedef void (*PTRINPUTCBFUNC)(GameWindow* window, gwInputEvent inputEvent);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * Prints a string stating the current library version that is in use, followed by a new line

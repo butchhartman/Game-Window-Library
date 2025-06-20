@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 project(GWL
-        VERSION 0.0.1
+        VERSION 0.0.5
         DESCRIPTION "A windowing library"
         LANGUAGES C)
 
